@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title> رحلة في تاريخ الأردن</title>
+  <style>
+    body { 
+        font-family: Arial;  background: url('background2.png') no-repeat center center fixed;
+    background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+   text-align: center; margin: 0; }
+    .screen { display: none; padding: 20px; }
+    .active { display: block; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 400px; margin: auto; }
+    .cell { background: #8b5e3c; padding: 40px 0; cursor: pointer; border-radius: 10px; transition: 0.3s; }
+    .cell:hover { background: #a06a45; transform: scale(1.05);}
+    .question-box { margin-top: 30px; }
+    .options button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #result { margin-top: 20px; font-size: 20px; color: #ff5722; }
+    .end-buttons { margin-top: 20px; }
+    .score { font-size: 18px; margin-bottom: 10px; color: #a06a45; }
+    .options button { background-color: #8b5e3c; color: white; border: none; border-radius: 5px; transition: 0.3s; }
+    .options button:hover { background-color: #a06a45; transform: scale(1.1); }
+    
+  </style>
+</head>
+<body>
+
+<div id="start-screen" class="screen active">
+  <h1>رحلة في تاريخ الأردن</h1>
+<button onclick="startGame()" style="background-color: #8b5e3c; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#a06a45'; this.style.transform='scale(1.1)';" onmouseout="this.style.backgroundColor='#8b5e3c'; this.style.transform='scale(1)';">ابدأ اللعبة</button>
+</div>
+
+<div id="game-screen" class="screen">
+  <h2>اختر محطة للإجابة</h2>
+  <div class="score" id="score"></div>
+  <div class="grid" id="maze"></div>
+  <div class="question-box" id="question-box"></div>
+  <div id="result"></div>
+</div>
+
+<div id="end-screen" class="screen">
+  <h2>🎉 أحسنت! أنهيت اللعبة</h2>
+  <div class="end-buttons">
+    <button onclick="restartGame()" style="background-color: #8b5e3c; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#a06a45'; this.style.transform='scale(1.1)';" onmouseout="this.style.backgroundColor='#8b5e3c'; this.style.transform='scale(1)';">إعادة اللعبة</button>
+    <button onclick="goHome()" style="background-color: #8b5e3c; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#a06a45'; this.style.transform='scale(1.1)';" onmouseout="this.style.backgroundColor='#8b5e3c'; this.style.transform='scale(1)';">العودة للرئيسية</button>
+   
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "اللواء الذي تشكل في عام 1894م هو:",
+    options: ["عجلون", "البلقاء", "الكرك", "معان"],
+    answer: 0
+  },
+  {
+    q: "الفئة الاجتماعية التي شكلت الغالبية العظمى من سكان الأردن في العهد العثماني:",
+    options: ["الحضر", "الفلاحون", "البدو", "التجار"],
+    answer: 1
+  },
+  {
+    q: "الأمير الهاشمي الذي حرر مدينة الطائف:",
+    options: ["علي بن الحسين", "عبد الله بن الحسين", "فيصل بن الحسين", "زيد بن الحسين"],
+    answer: 0
+  },
+  {
+    q: "جرى البدء بإنشاء الخط الحديدي الحجازي في عام:",
+    options: ["1900م", "1901م", "1902م", "1903م"],
+    answer: 0
+  },
+  {
+    q: "الضرائب التي كانت تُفرض على الأبنية في العهد العثماني:",
+    options: ["الوركو", "المستغلات", "العُشر", "الضرائب العُرفية"],
+    answer: 2
+  },
+  {
+    q: "عُقد ميثاق دمشق في عام:",
+    options: ["1914م", "1915م", "1916م", "1917م"],
+    answer: 2
+  },
+  {
+    q: "الحكومات المحلية التي تشكلت في الأردن في عام 1920م:",
+    options: ["عجلون، عمان، الكرك", "عجلون، الكرك، معان", "عجلون، السلط، الكرك", "عجلون، الكرك، المفرق"],
+    answer: 1
+  },
+  {
+    q: "الأمير الهاشمي الذي نودي به ملكاً على سوريا:",
+    options: ["علي بن الحسين", "عبد الله بن الحسين", "فيصل بن الحسين", "زيد بن الحسين"],
+    answer: 2
+  },
+  {
+    q: "المعركة التي حدثت في عام 1920م:",
+    options: ["العقبة", "الطفيلة", "معان", "ميسلون"],
+    answer: 3
+  }
+];
+
+let currentIndex = 0;
+let score = 0;
+
+function startGame() {
+  document.getElementById("start-screen").classList.remove("active");
+  document.getElementById("game-screen").classList.add("active");
+  score = 0;
+  updateScore();
+  buildMaze();
+}
+
+function buildMaze() {
+  const maze = document.getElementById("maze");
+  maze.innerHTML = "";
+  for (let i = 0; i < questions.length; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.textContent = `محطة ${i + 1}`;
+    cell.onclick = () => showQuestion(i);
+    maze.appendChild(cell);
+  }
+}
+
+function showQuestion(index) {
+  if (index !== currentIndex) return alert("يجب الإجابة على المحطات بالترتيب!");
+  const qBox = document.getElementById("question-box");
+  qBox.innerHTML = "";
+  const q = questions[index];
+  const h3 = document.createElement("h3");
+  h3.textContent = q.q;
+  qBox.appendChild(h3);
+  const opts = document.createElement("div");
+  opts.className = "options";
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(i);
+    opts.appendChild(btn);
+  });
+  qBox.appendChild(opts);
+}
+
+function checkAnswer(i) {
+  const result = document.getElementById("result");
+  if (i === questions[currentIndex].answer) {
+    result.textContent = "إجابة صحيحة!";
+    score++;
+    updateScore();
+    currentIndex++;
+    setTimeout(() => {
+      result.textContent = "";
+      document.getElementById("question-box").innerHTML = "";
+      if (currentIndex >= questions.length) {
+        document.getElementById("game-screen").classList.remove("active");
+        document.getElementById("end-screen").classList.add("active");
+      }
+    }, 1000);
+  } else {
+    result.textContent = "إجابة خاطئة، حاول مجددًا.";
+  }
+}
+
+function updateScore() {
+  document.getElementById("score").textContent = `النتيجة: ${score} / ${questions.length}`;
+}
+
+function restartGame() {
+  currentIndex = 0;
+  score = 0;
+  document.getElementById("end-screen").classList.remove("active");
+  document.getElementById("game-screen").classList.add("active");
+  updateScore();
+  buildMaze();
+}
+
+function goHome() {
+  currentIndex = 0;
+  score = 0;
+  document.getElementById("end-screen").classList.remove("active");
+  document.getElementById("start-screen").classList.add("active");
+  updateScore();
+}
+</script>
+
+</body>
+</html>
